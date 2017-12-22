@@ -121,7 +121,7 @@ train, test = supervised_values[0:-12], supervised_values[-12:]
 scaler, train_scaled, test_scaled = scale(train, test)
 
 # fit the model
-lstm_model = fit_lstm(train_scaled, 1, 250, 8, True, False)
+lstm_model = fit_lstm(train_scaled, 1, 250, 8, False, True)
 # forecast the entire training dataset to build up state for forecasting
 train_reshaped = train_scaled[:, 0].reshape(len(train_scaled), 1, 1)
 lstm_model.predict(train_reshaped, batch_size=1)
@@ -139,7 +139,8 @@ for i in range(len(test_scaled)):
     # store forecast
     predictions.append(yhat)
     expected = raw_values[len(train) + i + 1]
-    print('Month=%d, Predicted=%f, Expected=%f' % (i + 1, yhat, expected))
+    err = np.divide(yhat, expected) - 1
+    print('Month={0}, Predicted={1:.3f}, Expected={2:.3f}, Diff={3:.3f}'.format(i + 1, yhat, expected, err * 100))
 
 # report performance
 rmse = math.sqrt(mean_squared_error(raw_values[-12:], predictions))
@@ -150,3 +151,15 @@ ax.plot(raw_values[-12:], label='Observed')
 ax.plot(predictions, label='Predicted')
 ax.legend()
 plt.show()
+
+mom_pred = (pd.Series(predictions).pct_change(1) * 100).dropna()
+mom_act = (pd.Series(raw_values[-12:]).pct_change(1) * 100).dropna()
+
+fig, ax = plt.subplots(figsize=(12,9))
+ax.plot(mom_pred, label='Predicted')
+ax.plot(mom_act, label='Actual')
+ax.legend()
+plt.show()
+
+for p, a in zip(mom_pred,mom_act):
+    print('Predicted={:.3f}, Actual={:.3f}'.format(p,a))

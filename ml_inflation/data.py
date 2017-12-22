@@ -27,7 +27,7 @@ class InflationSeries(object):
 
     def get_monthly_change(self, force_reload: bool = False) -> pd.Series:
         raw = self.get_series(force_reload)
-        return raw.pct_change(1)
+        return raw.pct_change(1).dropna()
 
     @staticmethod
     def get_core():

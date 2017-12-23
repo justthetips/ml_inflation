@@ -20,6 +20,7 @@ def get_path():
         os.makedirs(path)
     return path
 
+
 # frame a sequence as a supervised learning problem
 def timeseries_to_supervised(data, lag=1):
     df = pd.DataFrame(data)
@@ -72,7 +73,7 @@ def fit_lstm(train, batch_size, nb_epoch, neurons,
              savemodel=True, loadmodel=False):
     model = None
     if loadmodel:
-        filepath = os.path.join(get_path(),'uvop.h5f')
+        filepath = os.path.join(get_path(), 'uvop.h5f')
         print('Loading model from {}'.format(filepath))
         model = load_model(filepath)
     else:
@@ -87,10 +88,10 @@ def fit_lstm(train, batch_size, nb_epoch, neurons,
         for i in range(nb_epoch):
             model.fit(X, y, epochs=1, batch_size=batch_size, verbose=0, shuffle=False)
             model.reset_states()
-            if (i+1) % 10 == 0:
-                print("Run {} of {}".format(i+1, nb_epoch))
+            if (i + 1) % 10 == 0:
+                print("Run {} of {}".format(i + 1, nb_epoch))
     if savemodel:
-        savepath = os.path.join(get_path(),'uvop.h5f')
+        savepath = os.path.join(get_path(), 'uvop.h5f')
         print('Saving model to {}'.format(savepath))
         model.save(savepath)
     return model
@@ -121,7 +122,7 @@ train, test = supervised_values[0:-12], supervised_values[-12:]
 scaler, train_scaled, test_scaled = scale(train, test)
 
 # fit the model
-lstm_model = fit_lstm(train_scaled, 1, 250, 8, False, True)
+lstm_model = fit_lstm(train_scaled, 1, 500, 64, True, False)
 # forecast the entire training dataset to build up state for forecasting
 train_reshaped = train_scaled[:, 0].reshape(len(train_scaled), 1, 1)
 lstm_model.predict(train_reshaped, batch_size=1)
@@ -146,7 +147,7 @@ for i in range(len(test_scaled)):
 rmse = math.sqrt(mean_squared_error(raw_values[-12:], predictions))
 print('Test RMSE: %.3f' % rmse)
 # line plot of observed vs predicted
-fig, ax = plt.subplots(figsize=(12,9))
+fig, ax = plt.subplots(figsize=(12, 9))
 ax.plot(raw_values[-12:], label='Observed')
 ax.plot(predictions, label='Predicted')
 ax.legend()
@@ -155,11 +156,11 @@ plt.show()
 mom_pred = (pd.Series(predictions).pct_change(1) * 100).dropna()
 mom_act = (pd.Series(raw_values[-12:]).pct_change(1) * 100).dropna()
 
-fig, ax = plt.subplots(figsize=(12,9))
+fig, ax = plt.subplots(figsize=(12, 9))
 ax.plot(mom_pred, label='Predicted')
 ax.plot(mom_act, label='Actual')
 ax.legend()
 plt.show()
 
-for p, a in zip(mom_pred,mom_act):
-    print('Predicted={:.3f}, Actual={:.3f}'.format(p,a))
+for p, a in zip(mom_pred, mom_act):
+    print('Predicted={:.3f}, Actual={:.3f}'.format(p, a))

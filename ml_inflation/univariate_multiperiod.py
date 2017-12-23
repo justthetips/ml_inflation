@@ -1,3 +1,7 @@
+"""
+First attempt, univariate-multperiod try.  Predicts the next 12 months of core inflation
+from just the core inflation series
+"""
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -141,7 +145,10 @@ for i in range(len(test_scaled)):
     predictions.append(yhat)
     expected = raw_values[len(train) + i + 1]
     err = np.divide(yhat, expected) - 1
-    print('Month={0}, Predicted={1:.3f}, Expected={2:.3f}, Diff={3:.3f}'.format(i + 1, yhat, expected, err * 100))
+    print('Month={0}, Predicted={1:.3f}, Expected={2:.3f}, Diff={3:.3f}'.format(i + 1,
+                                                                                yhat,
+                                                                                expected,
+                                                                                err * 100))
 
 # report performance
 rmse = math.sqrt(mean_squared_error(raw_values[-12:], predictions))

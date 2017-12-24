@@ -18,8 +18,13 @@ class InflationSeries(object):
     """
     series_code = attr.ib(validator=attr.validators.instance_of(str), type=str)
     series_name = attr.ib(validator=attr.validators.instance_of(str), type=str)
+    series = attr.ib(init=False)
 
-    _series = None
+    def __attrs_post_init__(self):
+        """
+        Load the data after initialization
+        """
+        self._load_data()
 
     def get_series(self, force_reload: bool = False) -> pd.Series:
         """
@@ -27,15 +32,24 @@ class InflationSeries(object):
         :param force_reload: get the data no matter what
         :return: pd.Series
         """
-        if self._series is None or force_reload:
-            # going to use a really old start date
-            raw = web.DataReader(self.series_code, "fred",
-                                 datetime.datetime(1913, 1, 1),
-                                 datetime.datetime.now())
-            raw.columns = [self.series_name]
-            self._series = raw.ix[:, 0]
+        if force_reload:
+            self._load_data()
 
-        return self._series
+        return self.series
+
+
+    def _load_data(self):
+        """
+        Use pandas datareader to load the data
+        """
+        #using a really old start date
+        raw = web.DataReader(self.series_code, "fred",
+                             datetime.datetime(1913, 1, 1),
+                             datetime.datetime.now())
+        raw.columns = [self.series_name]
+        self.series = raw.ix[:, 0]
+
+
 
     def get_monthly_change(self, force_reload: bool = False) -> pd.Series:
         """
